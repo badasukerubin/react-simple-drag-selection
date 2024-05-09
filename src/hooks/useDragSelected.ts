@@ -1,6 +1,6 @@
 import { RefObject, useEffect, useState } from "react";
 
-export function useDragSelected(
+export default function useDragSelected(
   elementRef: RefObject<HTMLElement>,
   selection: DOMRect | null
 ) {

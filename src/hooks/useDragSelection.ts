@@ -5,7 +5,7 @@ import { emptyCoordinates, emptyDOMRect } from "../helpers/helper";
 import { drawSelectionBox } from "../helpers/drawSelectionBox";
 import { updateScrollAxis } from "../helpers/updateScrollAxis";
 
-export function useDragSelection({
+export default function useDragSelection({
   containerRef,
   boxRef,
 }: UseDragSelectionProps) {
