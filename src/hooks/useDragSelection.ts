@@ -179,4 +179,6 @@ export default function useDragSelection({
 
     setMouseDown(false);
   }, [containerElement]);
+
+  return selection;
 }
