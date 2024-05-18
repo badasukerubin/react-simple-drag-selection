@@ -1,9 +1,11 @@
-import { RefObject, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { UseDragSelectedProps } from "./types";
 
-export default function useDragSelected(
-  elementRef: RefObject<HTMLElement>,
-  selection: DOMRect | null
-) {
+export default function useDragSelected({
+  elementRef,
+  selection,
+  onSelected,
+}: UseDragSelectedProps) {
   const [isSelected, setIsSelected] = useState(false);
   const hoveredElement = elementRef.current;
 
@@ -13,6 +15,7 @@ export default function useDragSelected(
     } else {
       const a = hoveredElement.getBoundingClientRect();
       const b = selection;
+
       setIsSelected(
         !(
           a.y + a.height < b.y ||
@@ -21,6 +24,8 @@ export default function useDragSelected(
           a.x > b.x + b.width
         )
       );
+
+      onSelected?.(isSelected);
     }
   }, [hoveredElement, selection]);
 

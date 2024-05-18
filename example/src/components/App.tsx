@@ -8,6 +8,18 @@ import { useMemo, useRef } from "react";
 import Boxes from "./Boxes";
 import { AppProps } from "../types";
 
+function onSelectionStart() {
+  console.log("Selection started");
+}
+
+function onSelection(selection: DOMRect) {
+  console.log("Selection", selection);
+}
+
+function onSelectionEnd() {
+  console.log("Selection ended");
+}
+
 export default function App({ axis, length = 30 }: AppProps) {
   const boxes = useMemo(
     () => Array.from({ length }, (_, index) => index + 1),
@@ -19,6 +31,10 @@ export default function App({ axis, length = 30 }: AppProps) {
   const selection = useDragSelection({
     containerRef: selectContainerRef,
     boxRef: selectBoxRef,
+    // optional callbacks
+    onSelectionStart,
+    onSelection,
+    onSelectionEnd,
   });
 
   return (

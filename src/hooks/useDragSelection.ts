@@ -8,6 +8,9 @@ import { updateScrollAxis } from "../helpers/updateScrollAxis";
 export default function useDragSelection({
   containerRef,
   boxRef,
+  onSelectionStart,
+  onSelection,
+  onSelectionEnd,
 }: UseDragSelectionProps) {
   const [selection, setSelection] = useState<DOMRect>(emptyDOMRect);
 
@@ -127,6 +130,8 @@ export default function useDragSelection({
     appendOrRemoveChild(containerElement, boxElement);
 
     if (containerElement.contains(e.target as HTMLElement)) {
+      onSelectionStart?.();
+
       document.body.style.userSelect = "none";
 
       document.addEventListener("mousemove", handleMouseMoveBound);
@@ -161,6 +166,7 @@ export default function useDragSelection({
       },
     };
 
+    onSelection?.(boxElement.getBoundingClientRect());
     handleDrawArea(boxElement);
     updateScrollAxis(boxElement, containerElement, e.clientX, e.clientY);
   }
@@ -212,6 +218,8 @@ export default function useDragSelection({
     prevScrollAxis.current = emptyCoordinates;
     prevScrollDelta.current = emptyCoordinates;
     isFirstScroll.current = { x: true, y: true };
+
+    onSelectionEnd?.();
 
     document.body.style.userSelect = "initial";
 
