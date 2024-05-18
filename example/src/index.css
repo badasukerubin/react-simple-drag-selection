@@ -1,0 +1,41 @@
+body {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #f0f0f0;
+}
+
+.container {
+  display: flex;
+  gap: 20px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.overflow-x {
+  display: flex;
+  overflow-x: auto;
+  width: 1170px;
+  height: 130px;
+  border: 1px solid #ccc;
+  padding: 10px;
+  background-color: #fff;
+}
+
+.overflow-y {
+  display: flex;
+  flex-wrap: wrap;
+  overflow-y: auto;
+  height: 300px;
+  width: 1170px;
+  border: 1px solid #ccc;
+  padding: 10px;
+  background-color: #fff;
+}
