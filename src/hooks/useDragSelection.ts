@@ -14,11 +14,11 @@ export default function useDragSelection({
 }: UseDragSelectionProps) {
   const [selection, setSelection] = useState<DOMRect>(emptyDOMRect);
 
-  const prevScrollAxis = useRef<Coordinates>(emptyCoordinates);
+  const prevScrollAxis = useRef<Coordinates>({ x: 0, y: 0 });
   const isFirstScroll = useRef({ x: true, y: true });
   //   scroll top,right: negative y/xDelta
   //   scroll down,left: positive y/xDelta
-  const prevScrollDelta = useRef<Coordinates>(emptyCoordinates);
+  const prevScrollDelta = useRef<Coordinates>({ x: 0, y: 0 });
 
   const mouseDownRef = useRef(false);
   const drawAreaRef = useRef<DrawArea>({
@@ -215,8 +215,8 @@ export default function useDragSelection({
     handleScrollBound: () => void
   ) {
     mouseDownRef.current = false;
-    prevScrollAxis.current = emptyCoordinates;
-    prevScrollDelta.current = emptyCoordinates;
+    prevScrollAxis.current = { x: 0, y: 0 };
+    prevScrollDelta.current = { x: 0, y: 0 };
     isFirstScroll.current = { x: true, y: true };
 
     onSelectionEnd?.();
