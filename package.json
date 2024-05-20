@@ -1,6 +1,6 @@
 {
   "name": "@badasukerubin/react-simple-drag-selection",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "description": "A react library that provides an efficient and effective drag selection logic.",
   "scripts": {
     "rollup": "rollup -c",
