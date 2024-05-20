@@ -1,6 +1,6 @@
 <!-- attach gif -->
 <p align="center">
-    <img src="./assets/react-simple-drag-selection.gif" alt="react-simple-drag-selection" style="width:900px" />
+    <img src="https://github.com/badasukerubin/react-simple-drag-selection/blob/v1.0.2/assets/react-simple-drag-selection.gif?raw=true" alt="react-simple-drag-selection" style="width:900px" />
 </p>
 
 # react-simple-drag-selection
@@ -90,10 +90,25 @@ A simple and configurable React library that provides an efficient and effective
    - `onSelectionEnd`: Optional callback function that is called when the selection ends
 
 4. `useDragSelected` has the following options:
+
    - `elementRef`: React ref to the element that you want to check if it is selected
    - `selection`: The selection object that is provided by the `DragSelectionContext`
    - `onSelected`: Optional callback function that is called when the element is selected
 
+5. You can also ignore elements from having the selection logic interfere with their default behaviour (or that of their descendants) by adding the `ignore-drag-selection` class to them.
+
+   ```tsx
+   <div className="ignore-drag-selection">
+     <div className="box" draggable={true} ondragstart={dragFunction}></div>
+   </div>
+   ```
+
 ## Example
 
-A full example can be found in the [example](./example/) directory.
+A full example can be found in the [example](https://github.com/badasukerubin/react-simple-drag-selection/tree/main/example) directory.
+
+## Roadmap
+
+- [ ] Unselect/Select using Shift and Meta keys
+- [ ] Add tests
+- [ ] Mobile/touch selection support
