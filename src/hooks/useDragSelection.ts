@@ -121,7 +121,10 @@ export default function useDragSelection({
     handleMouseMoveBound: (e: MouseEvent) => void,
     handleScrollBound: () => void
   ) {
-    if ((e.target as HTMLElement).closest(".ignore-drag-selection")) {
+    if (
+      e.button !== 0 ||
+      (e.target as HTMLElement).closest(".ignore-drag-selection")
+    ) {
       return;
     }
 
