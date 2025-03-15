@@ -13,6 +13,7 @@ export default function useDragSelection({
   onSelectionEnd,
 }: UseDragSelectionProps) {
   const [selection, setSelection] = useState<DOMRect>(emptyDOMRect);
+  const isDragging = useRef(false);
 
   const prevScrollAxis = useRef<Coordinates>({ x: 0, y: 0 });
   const isFirstScroll = useRef({ x: true, y: true });
@@ -129,6 +130,7 @@ export default function useDragSelection({
     }
 
     mouseDownRef.current = true;
+    isDragging.current = false;
 
     appendOrRemoveChild(containerElement, boxElement);
 
@@ -161,6 +163,7 @@ export default function useDragSelection({
     containerElement: HTMLElement,
     boxElement: HTMLElement
   ) {
+    isDragging.current = true;
     drawAreaRef.current = {
       ...drawAreaRef.current,
       end: {
@@ -217,6 +220,8 @@ export default function useDragSelection({
     handleMouseMoveBound: (e: MouseEvent) => void,
     handleScrollBound: () => void
   ) {
+    const wasDragging = isDragging.current;
+    isDragging.current = false;
     mouseDownRef.current = false;
     prevScrollAxis.current = { x: 0, y: 0 };
     prevScrollDelta.current = { x: 0, y: 0 };
@@ -228,6 +233,14 @@ export default function useDragSelection({
 
     document.removeEventListener("mousemove", handleMouseMoveBound);
     containerElement.removeEventListener("scroll", handleScrollBound);
+
+    if (wasDragging) {
+      const clickHandler = (e: MouseEvent) => {
+        e.stopPropagation();
+        document.removeEventListener("click", clickHandler, true);
+      };
+      document.addEventListener("click", clickHandler, true);
+    }
 
     appendOrRemoveChild(containerElement, boxElement);
   }
