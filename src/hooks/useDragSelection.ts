@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { DrawArea, UseDragSelectionProps } from "./types";
 import { Coordinates } from "../types";
 import { emptyCoordinates, emptyDOMRect } from "../helpers/helper";
@@ -8,11 +8,12 @@ import { updateScrollAxis } from "../helpers/updateScrollAxis";
 export default function useDragSelection({
   containerRef,
   boxRef,
+  mouseMoveThreshold = 5,
   onSelectionStart,
   onSelection,
   onSelectionEnd,
 }: UseDragSelectionProps) {
-  const [selection, setSelection] = useState<DOMRect>(emptyDOMRect);
+  const [selection, setSelection] = useState<DOMRect | null>(null);
   const isDragging = useRef(false);
 
   const prevScrollAxis = useRef<Coordinates>({ x: 0, y: 0 });
@@ -96,12 +97,11 @@ export default function useDragSelection({
     }
   }
 
-  function handleDrawArea(boxElement: HTMLElement) {
+  const handleDrawArea = useCallback((boxElement: HTMLElement) => {
     const { start, end, offset } = drawAreaRef.current;
 
-    if (start && end && boxElement) {
+    if (start && end && boxElement && isDragging.current) {
       drawSelectionBox(boxElement, start, end, offset);
-
       setSelection(boxElement.getBoundingClientRect());
     } else {
       drawSelectionBox(
@@ -110,10 +110,9 @@ export default function useDragSelection({
         emptyCoordinates,
         emptyCoordinates
       );
-
-      setSelection(emptyDOMRect);
+      setSelection(null);
     }
-  }
+  }, []);
 
   function handleMouseDown(
     e: MouseEvent,
@@ -163,18 +162,28 @@ export default function useDragSelection({
     containerElement: HTMLElement,
     boxElement: HTMLElement
   ) {
-    isDragging.current = true;
-    drawAreaRef.current = {
-      ...drawAreaRef.current,
-      end: {
-        x: e.clientX,
-        y: e.clientY,
-      },
-    };
+    if (!isDragging.current) {
+      const start = drawAreaRef.current.start;
+      if (start) {
+        const deltaX = Math.abs(e.clientX - start.x);
+        const deltaY = Math.abs(e.clientY - start.y);
 
-    onSelection?.(boxElement.getBoundingClientRect());
-    handleDrawArea(boxElement);
-    updateScrollAxis(boxElement, containerElement, e.clientX, e.clientY);
+        if (deltaX > mouseMoveThreshold || deltaY > mouseMoveThreshold) {
+          isDragging.current = true;
+        }
+      }
+    }
+
+    if (isDragging.current) {
+      drawAreaRef.current = {
+        ...drawAreaRef.current,
+        end: { x: e.clientX, y: e.clientY },
+      };
+
+      handleDrawArea(boxElement);
+      onSelection?.(boxElement.getBoundingClientRect());
+      updateScrollAxis(boxElement, containerElement, e.clientX, e.clientY);
+    }
   }
 
   function handleScroll(
