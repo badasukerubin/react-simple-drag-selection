@@ -85,6 +85,7 @@ A simple and configurable React library that provides an efficient and effective
 
    - `containerRef`: React ref to the container element
    - `boxRef`: React ref to the selection box element
+   - `mouseMoveThreshold`: Optional number that determines the distance the mouse has to move before the selection starts (current default is 5px)
    - `onSelectionStart`: Optional callback function that is called when the selection starts
    - `onSelection`: Optional callback function that is called when the selection changes
    - `onSelectionEnd`: Optional callback function that is called when the selection ends
@@ -111,4 +112,4 @@ A full example can be found in the [example](https://github.com/badasukerubin/re
 
 - [ ] Unselect/Select using Shift and Meta keys
 - [ ] Add tests
-- [ ] Mobile/touch selection support
+- [x] Mobile/touch selection support

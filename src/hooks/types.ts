@@ -4,6 +4,7 @@ import { Coordinates } from "../types";
 export interface UseDragSelectionProps {
   containerRef: RefObject<HTMLElement>;
   boxRef: RefObject<HTMLDivElement>;
+  mouseMoveThreshold?: number;
   onSelectionStart?: () => void;
   onSelection?: (selection: DOMRect) => void;
   onSelectionEnd?: () => void;

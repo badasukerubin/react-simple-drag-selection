@@ -1,18 +1,19 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { DrawArea, UseDragSelectionProps } from "./types";
 import { Coordinates } from "../types";
-import { emptyCoordinates, emptyDOMRect } from "../helpers/helper";
+import { emptyCoordinates } from "../helpers/helper";
 import { drawSelectionBox } from "../helpers/drawSelectionBox";
 import { updateScrollAxis } from "../helpers/updateScrollAxis";
 
 export default function useDragSelection({
   containerRef,
   boxRef,
+  mouseMoveThreshold = 5,
   onSelectionStart,
   onSelection,
   onSelectionEnd,
 }: UseDragSelectionProps) {
-  const [selection, setSelection] = useState<DOMRect>(emptyDOMRect);
+  const [selection, setSelection] = useState<DOMRect | null>(null);
   const isDragging = useRef(false);
 
   const prevScrollAxis = useRef<Coordinates>({ x: 0, y: 0 });
@@ -38,10 +39,11 @@ export default function useDragSelection({
 
     appendOrRemoveChild(containerElement, boxElement);
 
-    const handleMouseMoveBound = (e: MouseEvent) =>
+    const handleMouseMoveBound = (e: MouseEvent | TouchEvent) =>
       handleMouseMove(e, containerElement, boxElement);
     const handleScrollBound = () => handleScroll(containerElement, boxElement);
 
+    // Mouse events
     containerElement.addEventListener("mousedown", (e) =>
       handleMouseDown(
         e,
@@ -60,7 +62,28 @@ export default function useDragSelection({
       )
     );
 
+    // Touch events
+    containerElement.addEventListener("touchstart", (e) =>
+      handleMouseDown(
+        e,
+        containerElement,
+        boxElement,
+        handleMouseMoveBound,
+        handleScrollBound
+      )
+    );
+
+    document.addEventListener("touchend", () =>
+      handleMouseUp(
+        containerElement,
+        boxElement,
+        handleMouseMoveBound,
+        handleScrollBound
+      )
+    );
+
     return () => {
+      // Mouse events
       containerElement.removeEventListener("mousedown", (e) =>
         handleMouseDown(
           e,
@@ -71,6 +94,25 @@ export default function useDragSelection({
         )
       );
       document.removeEventListener("mouseup", () =>
+        handleMouseUp(
+          containerElement,
+          boxElement,
+          handleMouseMoveBound,
+          handleScrollBound
+        )
+      );
+
+      // Touch events
+      containerElement.removeEventListener("touchstart", (e) =>
+        handleMouseDown(
+          e,
+          containerElement,
+          boxElement,
+          handleMouseMoveBound,
+          handleScrollBound
+        )
+      );
+      document.removeEventListener("touchend", () =>
         handleMouseUp(
           containerElement,
           boxElement,
@@ -96,12 +138,11 @@ export default function useDragSelection({
     }
   }
 
-  function handleDrawArea(boxElement: HTMLElement) {
+  const handleDrawArea = useCallback((boxElement: HTMLElement) => {
     const { start, end, offset } = drawAreaRef.current;
 
-    if (start && end && boxElement) {
+    if (start && end && boxElement && isDragging.current) {
       drawSelectionBox(boxElement, start, end, offset);
-
       setSelection(boxElement.getBoundingClientRect());
     } else {
       drawSelectionBox(
@@ -110,20 +151,25 @@ export default function useDragSelection({
         emptyCoordinates,
         emptyCoordinates
       );
-
-      setSelection(emptyDOMRect);
+      setSelection(null);
     }
-  }
+  }, []);
 
   function handleMouseDown(
-    e: MouseEvent,
+    e: MouseEvent | TouchEvent,
     containerElement: HTMLElement,
     boxElement: HTMLElement,
-    handleMouseMoveBound: (e: MouseEvent) => void,
+    handleMouseMoveBound: (e: MouseEvent | TouchEvent) => void,
     handleScrollBound: () => void
   ) {
+    const clientX =
+      (e as MouseEvent).clientX ?? (e as TouchEvent).touches[0].clientX;
+    const clientY =
+      (e as MouseEvent).clientY ?? (e as TouchEvent).touches[0].clientY;
+
     if (
-      e.button !== 0 ||
+      ((e as MouseEvent).button !== undefined &&
+        (e as MouseEvent).button !== 0) ||
       (e.target as HTMLElement).closest(".ignore-drag-selection")
     ) {
       return;
@@ -140,16 +186,17 @@ export default function useDragSelection({
       document.body.style.userSelect = "none";
 
       document.addEventListener("mousemove", handleMouseMoveBound);
+      document.addEventListener("touchmove", handleMouseMoveBound);
       containerElement.addEventListener("scroll", handleScrollBound);
 
       drawAreaRef.current = {
         start: {
-          x: e.clientX,
-          y: e.clientY,
+          x: clientX,
+          y: clientY,
         },
         end: {
-          x: e.clientX,
-          y: e.clientY,
+          x: clientX,
+          y: clientY,
         },
         offset: undefined,
       };
@@ -159,22 +206,41 @@ export default function useDragSelection({
   }
 
   function handleMouseMove(
-    e: MouseEvent,
+    e: MouseEvent | TouchEvent,
     containerElement: HTMLElement,
     boxElement: HTMLElement
   ) {
-    isDragging.current = true;
-    drawAreaRef.current = {
-      ...drawAreaRef.current,
-      end: {
-        x: e.clientX,
-        y: e.clientY,
-      },
-    };
+    if (e.type === "touchmove") {
+      e.preventDefault();
+    }
 
-    onSelection?.(boxElement.getBoundingClientRect());
-    handleDrawArea(boxElement);
-    updateScrollAxis(boxElement, containerElement, e.clientX, e.clientY);
+    const clientX =
+      (e as MouseEvent).clientX ?? (e as TouchEvent).touches[0].clientX;
+    const clientY =
+      (e as MouseEvent).clientY ?? (e as TouchEvent).touches[0].clientY;
+
+    if (!isDragging.current) {
+      const start = drawAreaRef.current.start;
+      if (start) {
+        const deltaX = Math.abs(clientX - start.x);
+        const deltaY = Math.abs(clientY - start.y);
+
+        if (deltaX > mouseMoveThreshold || deltaY > mouseMoveThreshold) {
+          isDragging.current = true;
+        }
+      }
+    }
+
+    if (isDragging.current) {
+      drawAreaRef.current = {
+        ...drawAreaRef.current,
+        end: { x: clientX, y: clientY },
+      };
+
+      handleDrawArea(boxElement);
+      onSelection?.(boxElement.getBoundingClientRect());
+      updateScrollAxis(boxElement, containerElement, clientX, clientY);
+    }
   }
 
   function handleScroll(
@@ -217,7 +283,7 @@ export default function useDragSelection({
   function handleMouseUp(
     containerElement: HTMLElement,
     boxElement: HTMLElement,
-    handleMouseMoveBound: (e: MouseEvent) => void,
+    handleMouseMoveBound: (e: MouseEvent | TouchEvent) => void,
     handleScrollBound: () => void
   ) {
     const wasDragging = isDragging.current;
@@ -232,6 +298,7 @@ export default function useDragSelection({
     document.body.style.userSelect = "initial";
 
     document.removeEventListener("mousemove", handleMouseMoveBound);
+    document.removeEventListener("touchmove", handleMouseMoveBound);
     containerElement.removeEventListener("scroll", handleScrollBound);
 
     if (wasDragging) {
