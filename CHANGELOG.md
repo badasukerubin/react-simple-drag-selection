@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.3.0](https://github.com/badasukerubin/react-simple-drag-selection/compare/v1.2.0...v1.3.0) (2025-03-16)
+
+
+### Features
+
+* added mouseMoveThreshold for distance travelled before selection starts ([28b7ed2](https://github.com/badasukerubin/react-simple-drag-selection/commit/28b7ed204b35967bdbd5fbae151534e160a64526))
+* Mobile/touch selection support ([8d31812](https://github.com/badasukerubin/react-simple-drag-selection/commit/8d318125ea015da39678543f789e213599f172b6))
+
 ## [1.2.0](https://github.com/badasukerubin/react-simple-drag-selection/compare/v1.1.1...v1.2.0) (2025-03-15)
 
 
