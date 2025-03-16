@@ -112,4 +112,4 @@ A full example can be found in the [example](https://github.com/badasukerubin/re
 
 - [ ] Unselect/Select using Shift and Meta keys
 - [ ] Add tests
-- [ ] Mobile/touch selection support
+- [x] Mobile/touch selection support
