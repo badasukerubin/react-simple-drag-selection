@@ -4,33 +4,53 @@ import typescript from "@rollup/plugin-typescript";
 import dts from "rollup-plugin-dts";
 import terser from "@rollup/plugin-terser";
 
-import packageJson from "./package.json" assert { type: "json" };
-
 export default [
+  // CJS build
   {
     input: "src/index.ts",
-    output: [
-      {
-        file: packageJson.main,
-        format: "cjs",
-        sourcemap: true,
-      },
-      {
-        file: packageJson.module,
-        format: "esm",
-        sourcemap: true,
-      },
-    ],
+    output: {
+      dir: "dist/cjs",
+      format: "cjs",
+      sourcemap: true,
+      entryFileNames: "index.js",
+    },
     plugins: [
       resolve(),
       commonjs(),
-      typescript({ tsconfig: "./tsconfig.json" }),
+      typescript({
+        tsconfig: "./tsconfig.json",
+        outDir: "dist/cjs",
+        declaration: false,
+      }),
       terser(),
     ],
     external: ["react"],
   },
+  // ESM build
   {
-    input: "dist/esm/types/index.d.ts",
+    input: "src/index.ts",
+    output: {
+      dir: "dist/esm",
+      format: "esm",
+      sourcemap: true,
+      entryFileNames: "index.js",
+    },
+    plugins: [
+      resolve(),
+      commonjs(),
+      typescript({
+        tsconfig: "./tsconfig.json",
+        outDir: "dist/esm",
+        declaration: true,
+        declarationDir: "dist/esm",
+      }),
+      terser(),
+    ],
+    external: ["react"],
+  },
+  // Type declarations bundle
+  {
+    input: "dist/esm/index.d.ts",
     output: [{ file: "dist/index.d.ts", format: "esm" }],
     plugins: [dts()],
   },
